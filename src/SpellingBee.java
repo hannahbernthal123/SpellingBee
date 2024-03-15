@@ -1,3 +1,4 @@
+// Hannah Bernthal
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -38,6 +39,9 @@ public class SpellingBee {
     public SpellingBee(String letters) {
         this.letters = letters;
         words = new ArrayList<String>();
+        generate();
+        sort();
+        checkWords();
     }
 
     public void generate() {
@@ -45,24 +49,25 @@ public class SpellingBee {
     }
 
     public void makeWords(String word, String letters) {
-        if (letters.isEmpty()) {
+        if (letters.length() == 0 && !words.contains(word)) {
             words.add(word);
         }
-
         for (int i  = 0; i < letters.length(); i++) {
             makeWords(word + letters.charAt(i), letters.substring(0, i) + letters.substring(i + 1));
-            words.add(word + letters.charAt(i));
+        }
+        if (!words.contains(word)) {
+            words.add(word);
         }
     }
 
     public void sort() {
-        mergeSort(words, 0, words.size());
+        mergeSort(words, 0, words.size() - 1);
     }
 
     public ArrayList<String> mergeSort(ArrayList<String> arr, int low, int high) {
-        if (high -  low == 0) {
-            ArrayList<String> sorted = new ArrayList<>();
-            sorted.add(arr.get(0));
+        if (high == low) {
+            ArrayList<String> sorted = new ArrayList<String>();
+            sorted.add(arr.get(low));
             return sorted;
         }
         int mid = (high + low) / 2;
@@ -76,13 +81,15 @@ public class SpellingBee {
         int index = 0;
         int index2 = 0;
         while (index < arr1.size() && index2 < arr2.size()) {
-            if (arr1.get(index).compareTo(arr2.get(index2)) < 0) {
+            if (arr1.get(index).compareTo(arr2.get(index2)) <= 0) {
                 merged.add(arr1.get(index++));
             }
             else {
                 merged.add(arr2.get(index2++));
             }
         }
+
+        // This copies remaining elements.
         while (index < arr1.size()) {
             merged.add(arr1.get(index++));
         }
@@ -105,25 +112,26 @@ public class SpellingBee {
     }
 
     public boolean checkDictionary (String word, int first, int last) {
-        int mid = (first + last) / 2;
+        int mid = first + (last - first) / 2;
         if (DICTIONARY[mid].equals(word)) {
             return true;
         }
         if (first == last) {
-            return DICTIONARY[first].equals(word);
+            return false;
         }
-        if (DICTIONARY[mid].compareTo(word) < 0) {
-            return checkDictionary(word, first, mid - 1);
+        if (word.compareTo(DICTIONARY[mid]) < 0) {
+            return checkDictionary(word, first, mid);
         }
         // This line is (DICTIONARY[mid].compareTo(word) > 0)
-        else {
-            return checkDictionary(word, mid + 1, last);
-        }
+        return checkDictionary(word, mid + 1, last);
     }
 
     public void checkWords() {
-        for (String word : words) {
-            checkDictionary(word, 0, DICTIONARY_SIZE - 1);
+        for (int i = 0; i < words.size(); i++) {
+            if (!checkDictionary(words.get(i), 0, DICTIONARY_SIZE - 1)) {
+                words.remove(i);
+                i--;
+            }
         }
     }
 
